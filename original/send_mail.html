@@ -1,0 +1,449 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Teste - Servidor de Email</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      min-height: 100vh;
+      padding: 20px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .container {
+      background: white;
+      border-radius: 16px;
+      padding: 40px;
+      max-width: 600px;
+      width: 100%;
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+    }
+
+    h1 {
+      color: #333;
+      margin-bottom: 10px;
+      font-size: 28px;
+    }
+
+    .subtitle {
+      color: #666;
+      margin-bottom: 30px;
+      font-size: 14px;
+    }
+
+    .tabs {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 30px;
+      border-bottom: 2px solid #eee;
+    }
+
+    .tab {
+      padding: 10px 20px;
+      background: none;
+      border: none;
+      cursor: pointer;
+      font-size: 14px;
+      color: #666;
+      transition: all 0.3s;
+      border-bottom: 2px solid transparent;
+      margin-bottom: -2px;
+    }
+
+    .tab.active {
+      color: #667eea;
+      border-bottom-color: #667eea;
+      font-weight: bold;
+    }
+
+    .tab-content {
+      display: none;
+    }
+
+    .tab-content.active {
+      display: block;
+    }
+
+    .form-group {
+      margin-bottom: 20px;
+    }
+
+    label {
+      display: block;
+      margin-bottom: 8px;
+      color: #333;
+      font-weight: 500;
+      font-size: 14px;
+    }
+
+    input, textarea {
+      width: 100%;
+      padding: 12px;
+      border: 2px solid #e0e0e0;
+      border-radius: 8px;
+      font-size: 14px;
+      transition: border-color 0.3s;
+    }
+
+    input:focus, textarea:focus {
+      outline: none;
+      border-color: #667eea;
+    }
+
+    textarea {
+      resize: vertical;
+      min-height: 100px;
+      font-family: inherit;
+    }
+
+    button[type="submit"] {
+      width: 100%;
+      padding: 14px;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      border: none;
+      border-radius: 8px;
+      font-size: 16px;
+      font-weight: bold;
+      cursor: pointer;
+      transition: transform 0.2s, box-shadow 0.2s;
+    }
+
+    button[type="submit"]:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 10px 20px rgba(102, 126, 234, 0.4);
+    }
+
+    button[type="submit"]:active {
+      transform: translateY(0);
+    }
+
+    button[type="submit"]:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    .alert {
+      padding: 12px;
+      border-radius: 8px;
+      margin-bottom: 20px;
+      font-size: 14px;
+      display: none;
+    }
+
+    .alert.show {
+      display: block;
+      animation: slideIn 0.3s ease-out;
+    }
+
+    @keyframes slideIn {
+      from {
+        opacity: 0;
+        transform: translateY(-10px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .alert-success {
+      background: #d4edda;
+      color: #155724;
+      border: 1px solid #c3e6cb;
+    }
+
+    .alert-error {
+      background: #f8d7da;
+      color: #721c24;
+      border: 1px solid #f5c6cb;
+    }
+
+    .loading {
+      display: inline-block;
+      width: 16px;
+      height: 16px;
+      border: 2px solid #ffffff;
+      border-radius: 50%;
+      border-top-color: transparent;
+      animation: spin 0.8s linear infinite;
+      margin-left: 10px;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    .info-box {
+      background: #e7f3ff;
+      border-left: 4px solid #2196F3;
+      padding: 15px;
+      margin-bottom: 20px;
+      border-radius: 4px;
+      font-size: 13px;
+      color: #0c5460;
+    }
+
+    .info-box strong {
+      display: block;
+      margin-bottom: 5px;
+      color: #004085;
+    }
+
+    code {
+      background: #f0f0f0;
+      padding: 2px 6px;
+      border-radius: 3px;
+      font-family: monospace;
+      font-size: 12px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>📧 Teste de Email</h1>
+    <p class="subtitle">Servidor de Email com Resend</p>
+
+    <div class="info-box">
+      <strong>⚙️ Configuração:</strong>
+      Certifique-se de que o servidor está rodando em <code>http://localhost:3000</code>
+    </div>
+
+    <div id="alert" class="alert"></div>
+
+    <div class="tabs">
+      <button class="tab active" onclick="changeTab('boasVindas', event)">Boas-Vindas</button>
+      <button class="tab" onclick="changeTab('recuperarSenha', event)">Recuperar Senha</button>
+      <button class="tab" onclick="changeTab('notificacao', event)">Notificação</button>
+    </div>
+
+    <!-- Tab: Boas-Vindas -->
+    <div id="boasVindas" class="tab-content active">
+      <form onsubmit="enviarBoasVindas(event)">
+        <div class="form-group">
+          <label for="nome">Nome do Usuário</label>
+          <input type="text" id="nome" required placeholder="João Silva">
+        </div>
+        <div class="form-group">
+          <label for="email1">Email</label>
+          <input type="email" id="email1" required placeholder="joao@exemplo.com">
+        </div>
+        <button type="submit" id="btnBoasVindas">
+          Enviar Email de Boas-Vindas
+        </button>
+      </form>
+    </div>
+
+    <!-- Tab: Recuperar Senha -->
+    <div id="recuperarSenha" class="tab-content">
+      <form onsubmit="enviarRecuperarSenha(event)">
+        <div class="form-group">
+          <label for="email2">Email</label>
+          <input type="email" id="email2" required placeholder="usuario@exemplo.com">
+        </div>
+        <div class="form-group">
+          <label for="token">Token (gerado automaticamente)</label>
+          <input type="text" id="token" readonly value="" placeholder="Token será gerado">
+        </div>
+        <button type="submit" id="btnRecuperar">
+          Enviar Email de Recuperação
+        </button>
+      </form>
+    </div>
+
+    <!-- Tab: Notificação -->
+    <div id="notificacao" class="tab-content">
+      <form onsubmit="enviarNotificacao(event)">
+        <div class="form-group">
+          <label for="email3">Email</label>
+          <input type="email" id="email3" required placeholder="usuario@exemplo.com">
+        </div>
+        <div class="form-group">
+          <label for="titulo">Título</label>
+          <input type="text" id="titulo" required placeholder="Nova Mensagem">
+        </div>
+        <div class="form-group">
+          <label for="mensagem">Mensagem</label>
+          <textarea id="mensagem" required placeholder="Digite sua mensagem aqui..."></textarea>
+        </div>
+        <button type="submit" id="btnNotificacao">
+          Enviar Notificação
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <script>
+    const API_URL = 'http://localhost:3000';
+
+    function changeTab(tabName, event) {
+      // Remove active de todas as tabs
+      document.querySelectorAll('.tab').forEach(tab => tab.classList.remove('active'));
+      document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
+
+      // Adiciona active na tab clicada
+      event.target.classList.add('active');
+      document.getElementById(tabName).classList.add('active');
+
+      // Esconde alerta
+      hideAlert();
+    }
+
+    function showAlert(message, type) {
+      const alert = document.getElementById('alert');
+      alert.className = `alert alert-${type} show`;
+      alert.textContent = message;
+      
+      setTimeout(() => {
+        hideAlert();
+      }, 5000);
+    }
+
+    function hideAlert() {
+      const alert = document.getElementById('alert');
+      alert.classList.remove('show');
+    }
+
+    function setLoading(buttonId, isLoading) {
+      const button = document.getElementById(buttonId);
+      const originalText = button.textContent;
+      
+      if (isLoading) {
+        button.disabled = true;
+        button.dataset.originalText = originalText;
+        button.innerHTML = originalText + '<span class="loading"></span>';
+      } else {
+        button.disabled = false;
+        button.textContent = button.dataset.originalText || originalText;
+      }
+    }
+
+    async function enviarBoasVindas(e) {
+      e.preventDefault();
+      console.log('Enviando email de boas-vindas...');
+      
+      const nome = document.getElementById('nome').value;
+      const email = document.getElementById('email1').value;
+
+      setLoading('btnBoasVindas', true);
+
+      try {
+        console.log('Fazendo requisição para:', `${API_URL}/email/boas-vindas`);
+        const response = await fetch(`${API_URL}/email/boas-vindas`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ nome, email })
+        });
+
+        console.log('Resposta recebida:', response.status);
+        const data = await response.json();
+        console.log('Dados:', data);
+
+        if (response.ok) {
+          showAlert(`✅ Email enviado com sucesso para ${email}!`, 'success');
+          e.target.reset();
+        } else {
+          showAlert(`❌ Erro: ${data.erro}`, 'error');
+        }
+      } catch (error) {
+        console.error('Erro:', error);
+        showAlert('❌ Erro ao conectar com o servidor. Verifique se está rodando na porta 3000.', 'error');
+      } finally {
+        setLoading('btnBoasVindas', false);
+      }
+    }
+
+    async function enviarRecuperarSenha(e) {
+      e.preventDefault();
+      console.log('Enviando email de recuperação...');
+      
+      const email = document.getElementById('email2').value;
+      const token = Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
+      document.getElementById('token').value = token;
+
+      setLoading('btnRecuperar', true);
+
+      try {
+        const response = await fetch(`${API_URL}/email/recuperar-senha`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email, token })
+        });
+
+        const data = await response.json();
+        console.log('Resposta:', data);
+
+        if (response.ok) {
+          showAlert(`✅ Email de recuperação enviado para ${email}!`, 'success');
+        } else {
+          showAlert(`❌ Erro: ${data.erro}`, 'error');
+        }
+      } catch (error) {
+        console.error('Erro:', error);
+        showAlert('❌ Erro ao conectar com o servidor. Verifique se está rodando na porta 3000.', 'error');
+      } finally {
+        setLoading('btnRecuperar', false);
+      }
+    }
+
+    async function enviarNotificacao(e) {
+      e.preventDefault();
+      console.log('Enviando notificação...');
+      
+      const email = document.getElementById('email3').value;
+      const titulo = document.getElementById('titulo').value;
+      const mensagem = document.getElementById('mensagem').value;
+
+      setLoading('btnNotificacao', true);
+
+      try {
+        const response = await fetch(`${API_URL}/email/notificacao`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email, titulo, mensagem })
+        });
+
+        const data = await response.json();
+        console.log('Resposta:', data);
+
+        if (response.ok) {
+          showAlert(`✅ Notificação enviada para ${email}!`, 'success');
+          e.target.reset();
+        } else {
+          showAlert(`❌ Erro: ${data.erro}`, 'error');
+        }
+      } catch (error) {
+        console.error('Erro:', error);
+        showAlert('❌ Erro ao conectar com o servidor. Verifique se está rodando na porta 3000.', 'error');
+      } finally {
+        setLoading('btnNotificacao', false);
+      }
+    }
+
+    // Testa conexão ao carregar a página
+    window.addEventListener('DOMContentLoaded', async () => {
+      console.log('Testando conexão com o servidor...');
+      try {
+        const response = await fetch(API_URL);
+        const data = await response.json();
+        console.log('✅ Servidor conectado:', data);
+      } catch (error) {
+        console.error('❌ Erro ao conectar com servidor:', error);
+        showAlert('⚠️ Não foi possível conectar ao servidor. Certifique-se que está rodando na porta 3000.', 'error');
+      }
+    });
+  </script>
+</body>
+</html>

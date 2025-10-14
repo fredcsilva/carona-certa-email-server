@@ -1,0 +1,160 @@
+Comandos para inicializar:
+Api do servidor de e-mail:
+# Na pasta onde está o package.json
+# Testar servidor
+npm run dev
+
+# Em outro terminal, testar health
+curl http://localhost:3000/health
+
+# Testar envio de email de verificação
+curl -X POST http://localhost:3000/email/verificacao \
+  -H "Content-Type: application/json" \
+  -d '{
+    "email": "fredcsilva@gmail.com",
+    "name": "Fred",
+    "link": "https://exemplo.com/verify?token=abc123"
+  }'
+--------------
+Comandos PM2:
+
+# Iniciar em produção
+pm2 start ecosystem.config.cjs --env production
+
+# Ver status
+pm2 status
+
+# Ver logs em tempo real
+pm2 logs servidor-email
+
+# Parar
+pm2 stop servidor-email
+
+# Reiniciar
+pm2 restart servidor-email
+
+# Deletar do PM2
+pm2 delete servidor-email
+
+# Salvar configuração para reiniciar após reboot
+pm2 save
+pm2 startup
+--------------
+Iniciar em produção
+pm2 start ecosystem.config.cjs --env production
+
+docker-compose up -d
+--------------
+
+Aplicação web:
+# Na pasta onde está o send_mail.html
+npx http-server -p 8080
+
+##################################################
+import { Resend } from 'resend';
+
+const resend = new Resend('re_UcCKgFoj_8QafSrEmoxzWwU4pK2HswFaJ');
+
+resend.emails.send({
+  from: 'onboarding@resend.dev',
+  to: 'fredcsilva@gmail.com',
+  subject: 'Hello World',
+  html: '<p>Congrats on sending your <strong>first email</strong>!</p>'
+});
+
+-----------------
+
+resend: https://resend.com/ (fredcsilva@gmail.com)
+api key: re_UcCKgFoj_8QafSrEmoxzWwU4pK2HswFaJ
+------------------
+
+📝 Resumo do que você construiu:
+✅ Servidor Node.js com Express
+✅ Integração com Resend (3.000 emails/mês grátis)
+✅ 3 tipos de emails prontos:
+
+Boas-vindas
+Recuperação de senha
+Notificações customizadas
+
+✅ Templates HTML bonitos e responsivos
+✅ Interface de teste funcional
+🚀 Próximos passos (quando quiser):
+1. Verificar seu domínio (para emails profissionais)
+
+Adicionar os registros DNS no caronacerta.com.br
+Mudar EMAIL_FROM para contato@caronacerta.com.br
+
+---
+
+Verificar domínio (para depois): https://resend.com/docs/dashboard/domains/introduction
+Quando quiser usar seu domínio caronacerta.com.br de verdade, você precisa:
+1. No Resend:
+
+Acesse: https://resend.com/domains
+Clique em "Add Domain"
+Digite: caronacerta.com.br
+
+2. Você receberá 3 registros DNS:
+Exemplo do que o Resend vai te dar:
+Tipo: TXT
+Nome: @ ou caronacerta.com.br
+Valor: v=spf1 include:_spf.resend.com ~all
+
+Tipo: TXT  
+Nome: resend._domainkey
+Valor: (uma string longa com a chave DKIM)
+
+Tipo: TXT
+Nome: _dmarc
+Valor: v=DMARC1; p=none;
+3. Adicionar no seu provedor de domínio:
+Você precisa entrar no painel onde gerencia o domínio caronacerta.com.br (Registro.br, Hostinger, GoDaddy, etc.) e adicionar esses 3 registros na zona DNS.
+4. Aguardar verificação (15min a 48h)
+O Resend vai verificar automaticamente. Quando estiver OK, aparecerá "Verified" ✅
+
+=====
+
+🚀 Próximos passos (quando quiser):
+1. Verificar seu domínio (para emails profissionais)
+
+Adicionar os registros DNS no caronacerta.com.br
+Mudar EMAIL_FROM para contato@caronacerta.com.br
+
+2. Integrar com sua aplicação real
+Exemplo de uso no seu backend:
+javascript// No seu cadastro de usuários
+app.post('/api/cadastro', async (req, res) => {
+  const { nome, email, senha } = req.body;
+  
+  // Salva usuário no banco...
+  const usuario = await criarUsuario({ nome, email, senha });
+  
+  // Envia email (assíncrono, não bloqueia)
+  fetch('http://localhost:3000/email/boas-vindas', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ nome, email })
+  }).catch(err => console.error('Erro ao enviar email:', err));
+  
+  res.json({ sucesso: true });
+});
+3. Melhorias futuras:
+
+Adicionar fila de emails (Bull/BullMQ)
+Log de emails enviados
+Retry automático em caso de falha
+Templates mais personalizados
+Variáveis de ambiente para diferentes ambientes (dev/prod)
+
+4. Colocar em produção:
+
+Hospedar o servidor (Heroku, Railway, Render, VPS)
+Usar variáveis de ambiente seguras
+Monitorar taxa de entrega no painel do Resend
+
+💡 Dica importante:
+Guarde bem sua API Key do Resend - nunca commite ela no Git! Use sempre .env e adicione no .gitignore:
+# .gitignore
+node_modules/
+.env
