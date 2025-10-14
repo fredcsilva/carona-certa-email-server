@@ -1,3 +1,80 @@
-# .gitignore
-node_modules/
+# ========================================
+# SERVIDOR DE EMAIL - .gitignore
+# ========================================
+
+# Environment variables (CRÍTICO - NUNCA COMMITAR)
 .env
+.env.local
+.env.*.local
+.env.production
+.env.staging
+
+# Keep the template
+!.env.example
+
+# Node
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.pnpm-debug.log*
+
+# Logs
+logs
+*.log
+
+# Runtime data
+pids
+*.pid
+*.seed
+*.pid.lock
+
+# Coverage directory
+coverage/
+*.lcov
+.nyc_output/
+
+# IDEs and editors
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+Thumbs.db
+
+# Build files
+dist/
+build/
+out/
+
+# Temporary files
+tmp/
+temp/
+*.tmp
+
+# Cache
+.cache/
+.eslintcache
+
+# Lock files (opcional - descomente se preferir)
+# package-lock.json
+# yarn.lock
+
+# Backup files
+*.backup
+*.bak
+*.old
+
+# Test files
+test-results/
+*.test.js.snap
+
+# Email attachments (se houver upload temporário)
+uploads/
+attachments/
+
+# Database files (se usar SQLite local)
+*.db
+*.sqlite
+*.sqlite3
