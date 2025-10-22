@@ -11,13 +11,16 @@ export const createApp = () => {
   const app = express();
 
   // Middlewares globais
-  app.use(cors());
+  app.use(cors());  
   app.use(express.json());
 
   // Log de requisições em desenvolvimento
   if (process.env.NODE_ENV === 'development') {
+    // ✅ ADICIONE ISTO NO INÍCIO, LOGO APÓS app.use(cors())
     app.use((req, res, next) => {
-      console.log(`📨 ${req.method} ${req.path}`);
+      console.log(`\n📨 ${req.method} ${req.path}`);
+      console.log(`📦 Body:`, req.body);
+      console.log(`🕐 Timestamp:`, new Date().toISOString());
       next();
     });
   }
